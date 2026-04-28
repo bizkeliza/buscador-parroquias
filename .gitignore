@@ -1,0 +1,18 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (si se añaden herramientas de build en el futuro)
+node_modules/
+package-lock.json
