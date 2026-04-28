@@ -15,7 +15,7 @@ function bp_register_cpt() {
         ],
         'public'          => false,
         'show_ui'         => true,
-        'show_in_menu'    => 'edit.php?post_type=' . BP_CPT,
+        'show_in_menu'    => true,
         'show_in_rest'    => false,
         'menu_icon'       => 'dashicons-admin-multisite',
         'supports'        => ['title'],
