@@ -20,13 +20,84 @@ Plugin de WordPress para publicar una guía de parroquias y horarios de misa con
 - Plugin [Advanced Custom Fields (ACF)](https://www.advancedcustomfields.com/) instalado y activo (versión gratuita es suficiente)
 - Permalinks habilitados (Ajustes → Enlaces permanentes → cualquier opción distinta de "Sin formato")
 
-## Instalación
+## Instalación y configuración paso a paso
 
-1. Descarga o clona este repositorio en la carpeta `/wp-content/plugins/buscador-parroquias/`
-2. Activa el plugin desde *Plugins → Plugins instalados*
-3. Ve a **Parroquias → Configuración** y rellena los datos de tu organización
-4. Importa las parroquias desde **Parroquias → Importar Excel**
-5. Inserta el shortcode `[buscador_parroquias]` en la página donde quieras mostrar el buscador
+### Paso 1 — Instalar los plugins necesarios
+
+1. Ve a **Plugins → Añadir nuevo plugin**
+2. Busca **Advanced Custom Fields** (autor: WP Engine) → **Instalar** → **Activar**
+3. Ve de nuevo a **Plugins → Añadir nuevo plugin → Subir plugin**
+4. Descarga el ZIP de este repositorio (botón **Code → Download ZIP**) y súbelo → **Instalar** → **Activar**
+
+### Paso 2 — Regenerar los enlaces permanentes
+
+Ve a **Ajustes → Enlaces permanentes** y pulsa **Guardar cambios** sin modificar nada.
+
+> Esto es necesario para que la API REST del plugin funcione correctamente.
+
+### Paso 3 — Configurar la identidad y textos
+
+Ve a **Parroquias → Configuración** y rellena los campos:
+
+| Campo | Descripción | Ejemplo |
+|---|---|---|
+| Nombre de la organización | Aparece en la cabecera del buscador | `Diócesis de Bilbao` |
+| URL del logotipo | URL completa de la imagen del logo (subida a la Biblioteca de medios) | `https://tudominio.org/wp-content/uploads/logo.png` |
+| Enlace del logotipo | URL a la que apunta el logo al hacer clic (opcional) | `https://tudominio.org` |
+| Título de la cabecera | Título principal del widget | `Guía de parroquias y horarios de misa` |
+| Subtítulo de la cabecera | Texto descriptivo bajo el título | `Localiza iglesias, horarios y datos de contacto.` |
+| Organización (pie) | Nombre en el pie de página | `Diócesis de Bilbao` |
+| Descripción (pie) | Línea descriptiva en el pie | `Obispado de Bilbao` |
+| Dirección (pie) | Dirección postal de la organización | `C/ Henao, 5` |
+| Ciudad / CP (pie) | Ciudad y código postal | `48009 Bilbao` |
+| Email de contacto (pie) | Email visible en el pie del widget | `info@diocesisbilbao.org` |
+| Radio "Cerca de mí" (km) | Distancia máxima para la búsqueda por ubicación GPS | `5` |
+
+> **Cómo obtener la URL del logotipo:** Ve a **Biblioteca de medios**, sube el logo, haz clic sobre él y copia la URL que aparece en el panel derecho.
+
+Pulsa **Guardar cambios**.
+
+### Paso 4 — Preparar el Excel de parroquias
+
+El archivo `.xlsx` debe tener una fila de cabecera. El plugin reconoce los nombres de columna en español y euskera:
+
+| Campo | Nombres de columna aceptados |
+|---|---|
+| Parroquia | `Parroquia /Parrokia`, `PARROQUIA`, `Parroquia`, `Parrokia` |
+| Localidad | `Localidad/Herria`, `LOCALIDAD`, `Localidad`, `Herria` |
+| Dirección | `Helbidea/dirección`, `Dirección`, `Direccion`, `DIRECCION` |
+| C.P. | `C.P.`, `CP`, `CÓDIGO POSTAL`, `Codigo Postal` |
+| Teléfono | `TELÉFONO`, `TELEFONO`, `Teléfono`, `Telefono` |
+| Email | `EMAIL`, `E-MAIL`, `Email` |
+| Párroco | `PÁRROCO`, `PARROCO`, `Párroco`, `Parroco` |
+| UP / Sector | `UP / SECTOR`, `UP/SECTOR`, `UP`, `SECTOR` |
+| Horario invierno | `Horario misas invierno`, `HORARIO MISAS INVIERNO` |
+| Horario verano | `Horario misas verano`, `HORARIO MISAS VERANO` |
+| Latitud | `LATITUD`, `Latitud` |
+| Longitud | `LONGITUD`, `Longitud` |
+
+> Las columnas **Latitud** y **Longitud** son opcionales, pero necesarias para que funcione el botón "Cerca de mí".
+
+### Paso 5 — Importar las parroquias
+
+1. Ve a **Parroquias → Importar Excel**
+2. Selecciona el archivo `.xlsx`
+3. Marca **"Eliminar todas las parroquias existentes antes de importar"** si es una reimportación completa
+4. Pulsa **Iniciar importación** y espera a que termine el log
+
+### Paso 6 — Crear la página del buscador
+
+1. Ve a **Páginas → Añadir nueva**
+2. Dale un título (ej: `Horarios de misa`)
+3. Inserta el shortcode en el contenido:
+
+```
+[buscador_parroquias]
+```
+
+4. Publica la página
+
+El buscador ya está operativo. Los visitantes pueden buscar por nombre de parroquia o localidad, o pulsar **Cerca de mí** para ver iglesias en el radio configurado.
 
 ## Formato del Excel de importación
 
