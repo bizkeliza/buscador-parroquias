@@ -59,6 +59,8 @@ Pulsa **Guardar cambios**.
 
 ### Paso 4 — Preparar el Excel de parroquias
 
+Puedes descargar la plantilla lista para rellenar: [`docs/plantilla_importacion.xlsx`](docs/plantilla_importacion.xlsx)
+
 El archivo `.xlsx` debe tener una fila de cabecera. El plugin reconoce los nombres de columna en español y euskera:
 
 | Campo | Nombres de columna aceptados |
@@ -77,6 +79,10 @@ El archivo `.xlsx` debe tener una fila de cabecera. El plugin reconoce los nombr
 | Longitud | `LONGITUD`, `Longitud` |
 
 > Las columnas **Latitud** y **Longitud** son opcionales, pero necesarias para que funcione el botón "Cerca de mí".
+
+> ⚠️ **Formato de coordenadas — importante:** usa siempre **coma** como separador decimal (`43,264714` y `-2,936014`), que es el formato estándar en Excel con locale español. Si usas punto decimal (`43.264714`), Excel en español lo interpreta como separador de miles y elimina el decimal, corrompiendo la coordenada. El plugin detecta y corrige este error automáticamente, pero lo más seguro es introducir las coordenadas con coma desde el principio.
+>
+> 💡 Para obtener coordenadas: abre **Google Maps**, haz clic derecho sobre la ubicación y copia las coordenadas. Aparecen en formato decimal con punto (`43.264714, -2.936014`); al pegarlas en Excel, este las convierte automáticamente a coma decimal.
 
 ### Paso 5 — Importar las parroquias
 

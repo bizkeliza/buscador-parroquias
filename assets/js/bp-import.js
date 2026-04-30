@@ -30,6 +30,38 @@
         return '';
     }
 
+    // Normaliza coordenadas: acepta coma decimal (43,299278), punto (43.299278)
+    // y enteros sin decimal (43264714 → 43.264714) producidos cuando Excel
+    // en locale español interpreta el punto inglés como separador de miles.
+    // campo: 'latitud' | 'longitud'
+    function normalizarCoordenada(val, campo) {
+        if (val === '') return '';
+        var s = val.replace(/\s/g, '');
+        // Formato europeo sin miles: -2,886851 → -2.886851
+        if (/^-?\d+,\d+$/.test(s)) {
+            s = s.replace(',', '.');
+        }
+        // Formato europeo con miles: 1.234,567 → 1234.567
+        if (/^-?\d{1,3}(\.\d{3})+,\d+$/.test(s)) {
+            s = s.replace(/\./g, '').replace(',', '.');
+        }
+        var n = parseFloat(s);
+        if (isNaN(n)) return '';
+
+        // Detectar entero sin decimal: lat válida ≤ ±90, lon válida ≤ ±180
+        var limite = (campo === 'latitud') ? 90 : 180;
+        if (Math.abs(n) > limite) {
+            var sign   = n < 0 ? -1 : 1;
+            var absStr = String(Math.round(Math.abs(n)));
+            // lat → 2 dígitos enteros (ej. 43); lon → 1 dígito entero (ej. 2, 3)
+            var intD = (campo === 'latitud') ? 2 : 1;
+            var decD = absStr.length - intD;
+            if (decD > 0) n = sign * Math.abs(n) / Math.pow(10, decD);
+        }
+
+        return String(n);
+    }
+
     function logMsg(log, msg, tipo) {
         var colores = { ok: '#0a6b2e', error: '#b00000', info: '#1e1e1e' };
         var p = document.createElement('p');
@@ -81,7 +113,10 @@
                 var filas = json.map(function (fila) {
                     var row = {};
                     for (var campo in MAPA) {
-                        row[campo] = valorCampo(fila, MAPA[campo]);
+                        var val = valorCampo(fila, MAPA[campo]);
+                        row[campo] = (campo === 'latitud' || campo === 'longitud')
+                            ? normalizarCoordenada(val, campo)
+                            : val;
                     }
                     return row;
                 }).filter(function (f) {

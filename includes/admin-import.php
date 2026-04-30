@@ -111,7 +111,16 @@ function bp_ajax_import_batch() {
         if (is_wp_error($post_id)) { $errores++; continue; }
 
         foreach ($campos as $campo) {
-            update_post_meta($post_id, $campo, sanitize_text_field($fila[$campo] ?? ''));
+            $valor = sanitize_text_field($fila[$campo] ?? '');
+            if ($campo === 'latitud' || $campo === 'longitud') {
+                // Normalizar coma decimal → punto; validar sin castear a float
+                // (evita problema de locale: (string)(float) puede producir coma en servidor ES)
+                $valor = str_replace(',', '.', $valor);
+                if ($valor !== '' && !preg_match('/^-?\d+(\.\d+)?$/', $valor)) {
+                    $valor = '';
+                }
+            }
+            update_post_meta($post_id, $campo, $valor);
         }
         $creadas++;
     }
