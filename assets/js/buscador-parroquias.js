@@ -144,6 +144,11 @@
 
         status.textContent = mensaje || (lista.length + ' resultado(s) encontrado(s).');
 
+        var iconChevron =
+            '<svg class="bp-chevron-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+            '<path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>';
+
         results.innerHTML = lista.map(function (item) {
             var mapa      = construirMapa(item.latitud, item.longitud, item.direccion);
             var distancia = (ubicacionUsuario && item.latitud !== null && item.longitud !== null)
@@ -152,7 +157,7 @@
 
             return (
                 '<div class="bp-card">' +
-                    '<div class="bp-card-top">' +
+                    '<div class="bp-card-top bp-card-header" role="button" tabindex="0" aria-expanded="false">' +
                         '<div class="bp-church-icon">' + iconChurch + '</div>' +
                         '<div style="flex:1;">' +
                             '<h3>' + escapeHtml(item.parroquia || 'Parroquia') + '</h3>' +
@@ -162,31 +167,45 @@
                                 (distancia !== null ? '<span class="bp-tag bp-tag-distance">' + distancia.toFixed(2) + ' km</span>' : '') +
                             '</div>' +
                         '</div>' +
+                        '<div class="bp-card-chevron">' + iconChevron + '</div>' +
                     '</div>' +
 
-                    '<div class="bp-info-card">' +
-                        '<div class="bp-info-title">Contacto</div>' +
-                        '<div class="bp-meta">' +
-                            (item.direccion ? '<div class="bp-meta-row"><strong>Dirección:</strong><span>' + escapeHtml(item.direccion) + '</span></div>' : '') +
-                            (item.cp        ? '<div class="bp-meta-row"><strong>C.P.:</strong><span>' + escapeHtml(item.cp) + '</span></div>' : '') +
-                            (item.telefono  ? '<div class="bp-meta-row"><strong>Teléfono:</strong><span>' + escapeHtml(item.telefono) + '</span></div>' : '') +
-                            (item.email     ? '<div class="bp-meta-row"><strong>Email:</strong><span><a href="mailto:' + escapeHtml(item.email) + '">' + escapeHtml(item.email) + '</a></span></div>' : '') +
-                            (item.parroco   ? '<div class="bp-meta-row"><strong>Párroco:</strong><span>' + escapeHtml(item.parroco) + '</span></div>' : '') +
+                    '<div class="bp-card-body">' +
+                        '<div class="bp-info-card">' +
+                            '<div class="bp-info-title">Contacto</div>' +
+                            '<div class="bp-meta">' +
+                                (item.direccion ? '<div class="bp-meta-row"><strong>Dirección:</strong><span>' + escapeHtml(item.direccion) + '</span></div>' : '') +
+                                (item.cp        ? '<div class="bp-meta-row"><strong>C.P.:</strong><span>' + escapeHtml(item.cp) + '</span></div>' : '') +
+                                (item.telefono  ? '<div class="bp-meta-row"><strong>Teléfono:</strong><span>' + escapeHtml(item.telefono) + '</span></div>' : '') +
+                                (item.email     ? '<div class="bp-meta-row"><strong>Email:</strong><span><a href="mailto:' + escapeHtml(item.email) + '">' + escapeHtml(item.email) + '</a></span></div>' : '') +
+                                (item.parroco   ? '<div class="bp-meta-row"><strong>Párroco:</strong><span>' + escapeHtml(item.parroco) + '</span></div>' : '') +
+                            '</div>' +
                         '</div>' +
-                    '</div>' +
 
-                    '<div class="bp-schedules">' +
-                        '<div class="bp-schedules-title">Horarios de misa</div>' +
-                        '<div class="bp-schedule-row"><div class="bp-schedule-label">Invierno</div><div>' + escapeHtml(item.horarioInvierno || 'No disponible') + '</div></div>' +
-                        '<div class="bp-schedule-row"><div class="bp-schedule-label">Verano</div><div>'   + escapeHtml(item.horarioVerano   || 'No disponible') + '</div></div>' +
-                    '</div>' +
+                        '<div class="bp-schedules">' +
+                            '<div class="bp-schedules-title">Horarios de misa</div>' +
+                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Invierno</div><div>' + escapeHtml(item.horarioInvierno || 'No disponible') + '</div></div>' +
+                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Verano</div><div>'   + escapeHtml(item.horarioVerano   || 'No disponible') + '</div></div>' +
+                        '</div>' +
 
-                    '<div class="bp-actions">' +
-                        (mapa ? '<a class="bp-link" href="' + mapa + '" target="_blank" rel="noopener">Ver en Google Maps</a>' : '') +
+                        (mapa ? '<div class="bp-actions"><a class="bp-link" href="' + mapa + '" target="_blank" rel="noopener">Ver en Google Maps</a></div>' : '') +
                     '</div>' +
                 '</div>'
             );
         }).join('');
+
+        // Lógica de colapso: clic o Enter/Espacio en la cabecera
+        results.querySelectorAll('.bp-card-header').forEach(function (header) {
+            function toggle() {
+                var card     = header.closest('.bp-card');
+                var expanded = card.classList.toggle('bp-card--expanded');
+                header.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            }
+            header.addEventListener('click', toggle);
+            header.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+            });
+        });
     }
 
     function mostrarInicio() {
