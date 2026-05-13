@@ -3,17 +3,19 @@
 Plugin Name:  Buscador de Parroquias
 Plugin URI:   https://github.com/bizkeliza/buscador-parroquias
 Description:  Guía de parroquias y horarios de misa configurable para cualquier diócesis. Gestiona los datos mediante Custom Post Type y ACF, e incluye importación desde Excel.
-Version:      2.1.0
+Version:      2.2.0
 Author:       Bizkeliza
 Author URI:   https://bizkeliza.org
 License:      GPL-2.0+
 License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  buscador-parroquias
+GitHub Plugin URI: bizkeliza/buscador-parroquias
+GitHub Branch:     main
 */
 
 if (!defined('ABSPATH')) exit;
 
-define('BP_VERSION',    '2.1.0');
+define('BP_VERSION',    '2.2.0');
 define('BP_CPT',        'bp_parroquia');
 define('BP_REST_NS',    'bp-guia/v1');
 define('BP_OPTION_KEY', 'bp_guia_settings');
