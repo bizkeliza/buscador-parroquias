@@ -19,6 +19,7 @@ Plugin de WordPress para publicar una guía de parroquias y horarios de misa con
 - PHP 7.4 o superior
 - Plugin [Advanced Custom Fields (ACF)](https://www.advancedcustomfields.com/) instalado y activo (versión gratuita es suficiente)
 - Permalinks habilitados (Ajustes → Enlaces permanentes → cualquier opción distinta de "Sin formato")
+- *(Opcional)* Plugin [Git Updater](https://git-updater.com) para recibir actualizaciones automáticas desde GitHub
 
 ## Instalación y configuración paso a paso
 
@@ -125,6 +126,26 @@ El archivo `.xlsx` debe tener una hoja con una fila de cabecera. El plugin detec
 | `longitud` | `LONGITUD`, `Longitud` |
 
 Las coordenadas (`latitud` / `longitud`) son opcionales pero necesarias para la función "Cerca de mí".
+
+## Actualizaciones
+
+El plugin incluye soporte para [Git Updater](https://git-updater.com), que permite recibir las actualizaciones directamente desde WordPress sin necesidad de descargar ni subir ficheros manualmente.
+
+### Configuración inicial (solo una vez)
+
+1. Descarga Git Updater desde **https://git-updater.com** (la versión gratuita es suficiente para repositorios GitHub públicos)
+2. Ve a **Plugins → Añadir nuevo plugin → Subir plugin**, sube el ZIP y actívalo
+3. A partir de ese momento, cuando se publique una nueva versión del plugin, aparecerá una notificación estándar de WordPress en **Plugins → Actualizaciones**
+
+### Flujo de actualización
+
+Cada vez que se publique una nueva versión en GitHub:
+
+1. WordPress mostrará una notificación de actualización disponible
+2. Haz clic en **Actualizar ahora**
+3. Vacía la caché si usas LiteSpeed Cache, WP Rocket, W3 Total Cache u otro plugin de caché
+
+> Si no instalas Git Updater, el plugin seguirá funcionando con normalidad, pero las actualizaciones deberás aplicarlas manualmente descargando el ZIP del repositorio y subiéndolo desde **Plugins → Añadir nuevo plugin → Subir plugin**.
 
 ## Gestión manual de parroquias
 
