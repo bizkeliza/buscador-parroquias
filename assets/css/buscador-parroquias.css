@@ -334,6 +334,104 @@
 .bp-footer-icons .bp-footer-line { display: flex; align-items: flex-start; gap: 8px; }
 .bp-footer a { color: #fff; text-decoration: underline; }
 
+/* ── Botones de impresión ── */
+.bp-print-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.bp-btn-print,
+.bp-btn-print-all {
+    border: 2px solid rgba(0, 161, 154, 0.35);
+    background: #fff;
+    color: #00a19a;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.bp-btn-print:hover,
+.bp-btn-print-all:hover {
+    background: rgba(0, 161, 154, 0.08);
+    border-color: #00a19a;
+}
+
+/* ── Impresión / PDF ── */
+@media print {
+    /* Ocultar todo excepto el widget */
+    body {
+        visibility: hidden;
+    }
+    #bp-app,
+    #bp-app * {
+        visibility: visible;
+    }
+    #bp-app {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        max-width: none;
+    }
+    .bp-wrap {
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+    }
+    /* Cabecera: forzar color de fondo en impresión */
+    .bp-header {
+        background: #00a19a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        padding-bottom: 20px !important;
+    }
+    .bp-body {
+        margin-top: 0 !important;
+    }
+    /* Ocultar controles de búsqueda e impresión */
+    .bp-searchbar,
+    .bp-print-bar {
+        display: none !important;
+    }
+    .bp-search-panel {
+        box-shadow: none;
+        border: none;
+        padding: 8px 0 0;
+    }
+    /* Una columna, sin gaps excesivos */
+    .bp-results {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    /* Tarjetas: expandidas, sin sombra, sin salto de página interno */
+    .bp-card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        border-radius: 8px;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    .bp-card-body {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    /* Ocultar elementos no útiles en papel */
+    .bp-card-chevron,
+    .bp-actions {
+        display: none !important;
+    }
+    /* Pie: forzar color */
+    .bp-footer {
+        background: #00a19a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
     .bp-results { grid-template-columns: 1fr; }

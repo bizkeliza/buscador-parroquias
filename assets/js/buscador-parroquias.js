@@ -111,6 +111,10 @@
                             '<button id="bp-btn-clear" class="bp-btn-clear">Limpiar</button>' +
                         '</div>' +
                         '<div id="bp-status" class="bp-status">Cargando datos...</div>' +
+                        '<div id="bp-print-bar" class="bp-print-bar">' +
+                            '<button id="bp-btn-print" class="bp-btn-print" style="display:none">Imprimir resultados</button>' +
+                            '<button id="bp-btn-print-all" class="bp-btn-print-all" style="display:none">Imprimir todo</button>' +
+                        '</div>' +
                     '</div>' +
                     '<div id="bp-results" class="bp-results">' +
                         '<div class="bp-loading">Cargando...</div>' +
@@ -135,6 +139,11 @@
     function pintarResultados(lista, mensaje, ubicacionUsuario) {
         var status  = document.getElementById('bp-status');
         var results = document.getElementById('bp-results');
+
+        listaActual   = lista || [];
+        mensajeActual = mensaje || '';
+        var btnPrint = document.getElementById('bp-btn-print');
+        if (btnPrint) btnPrint.style.display = (lista && lista.length) ? '' : 'none';
 
         if (!lista || !lista.length) {
             status.textContent  = mensaje || 'No se han encontrado resultados.';
@@ -208,9 +217,29 @@
         });
     }
 
+    function imprimir(todo) {
+        var prevLista   = listaActual;
+        var prevMensaje = mensajeActual;
+        if (todo) {
+            pintarResultados(datos, datos.length + ' parroquias en el listado completo.', null);
+        }
+        window.print();
+        if (todo) {
+            if (prevLista.length) {
+                pintarResultados(prevLista, prevMensaje, ubicacionUsuario);
+            } else {
+                mostrarInicio();
+            }
+        }
+    }
+
     function mostrarInicio() {
         var results = document.getElementById('bp-results');
         if (!results) return;
+        listaActual   = [];
+        mensajeActual = '';
+        var btnPrint = document.getElementById('bp-btn-print');
+        if (btnPrint) btnPrint.style.display = 'none';
         results.innerHTML =
             '<div class="bp-start">' +
                 iconChurch +
@@ -222,6 +251,8 @@
 
     var datos            = [];
     var ubicacionUsuario = null;
+    var listaActual      = [];
+    var mensajeActual    = '';
 
     async function cargarDatos() {
         var status  = document.getElementById('bp-status');
@@ -232,6 +263,8 @@
             if (!response.ok) throw new Error('HTTP ' + response.status);
             datos = await response.json();
             status.textContent = 'Escribe una localidad o parroquia y pulsa "Buscar", o usa "Cerca de mí".';
+            var btnPrintAll = document.getElementById('bp-btn-print-all');
+            if (btnPrintAll && datos.length) btnPrintAll.style.display = '';
             mostrarInicio();
         } catch (error) {
             status.textContent  = 'Error al cargar los datos.';
@@ -287,13 +320,17 @@
 
         renderApp(app);
 
-        var input     = document.getElementById('bp-input');
-        var btnSearch = document.getElementById('bp-btn-search');
-        var btnNear   = document.getElementById('bp-btn-near');
-        var btnClear  = document.getElementById('bp-btn-clear');
-        var status    = document.getElementById('bp-status');
+        var input       = document.getElementById('bp-input');
+        var btnSearch   = document.getElementById('bp-btn-search');
+        var btnNear     = document.getElementById('bp-btn-near');
+        var btnClear    = document.getElementById('bp-btn-clear');
+        var btnPrint    = document.getElementById('bp-btn-print');
+        var btnPrintAll = document.getElementById('bp-btn-print-all');
+        var status      = document.getElementById('bp-status');
 
         btnSearch.addEventListener('click', function () { buscar(false); });
+        if (btnPrint)    btnPrint.addEventListener('click',    function () { imprimir(false); });
+        if (btnPrintAll) btnPrintAll.addEventListener('click', function () { imprimir(true); });
 
         btnNear.addEventListener('click', async function () {
             status.textContent = 'Obteniendo tu ubicación...';
