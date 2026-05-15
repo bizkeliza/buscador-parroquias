@@ -22,3 +22,70 @@ function bp_register_cpt() {
         'capability_type' => 'post',
     ]);
 }
+
+// ── Columna Localidad en el listado ──────────────────────────────────────────
+
+add_filter('manage_bp_parroquia_posts_columns', 'bp_add_localidad_column');
+function bp_add_localidad_column($columns) {
+    $new = [];
+    foreach ($columns as $key => $label) {
+        $new[$key] = $label;
+        if ($key === 'title') {
+            $new['localidad'] = __('Localidad', 'buscador-parroquias');
+        }
+    }
+    return $new;
+}
+
+add_action('manage_bp_parroquia_posts_custom_column', 'bp_render_localidad_column', 10, 2);
+function bp_render_localidad_column($column, $post_id) {
+    if ($column === 'localidad') {
+        echo esc_html(get_post_meta($post_id, 'localidad', true));
+    }
+}
+
+add_filter('manage_edit-bp_parroquia_sortable_columns', 'bp_sortable_localidad_column');
+function bp_sortable_localidad_column($columns) {
+    $columns['localidad'] = 'localidad';
+    return $columns;
+}
+
+add_action('pre_get_posts', 'bp_localidad_orderby');
+function bp_localidad_orderby($query) {
+    if (!is_admin() || !$query->is_main_query()) return;
+    if ($query->get('post_type') !== BP_CPT) return;
+    if ($query->get('orderby') !== 'localidad') return;
+    $query->set('meta_key', 'localidad');
+    $query->set('orderby', 'meta_value');
+}
+
+// ── Búsqueda por localidad en el buscador del escritorio ─────────────────────
+
+add_filter('posts_join', 'bp_localidad_search_join', 10, 2);
+function bp_localidad_search_join($join, $query) {
+    global $wpdb;
+    if (!is_admin() || !$query->is_main_query() || !$query->is_search()) return $join;
+    if ($query->get('post_type') !== BP_CPT) return $join;
+    $join .= " LEFT JOIN {$wpdb->postmeta} AS bp_meta_loc
+                ON ({$wpdb->posts}.ID = bp_meta_loc.post_id
+                AND bp_meta_loc.meta_key = 'localidad')";
+    return $join;
+}
+
+add_filter('posts_search', 'bp_localidad_search_where', 10, 2);
+function bp_localidad_search_where($search, $query) {
+    global $wpdb;
+    if (!is_admin() || !$query->is_main_query() || !$query->is_search()) return $search;
+    if ($query->get('post_type') !== BP_CPT) return $search;
+    $term = '%' . $wpdb->esc_like($query->get('s')) . '%';
+    $search .= $wpdb->prepare(' OR bp_meta_loc.meta_value LIKE %s', $term);
+    return $search;
+}
+
+// Evita duplicados cuando el JOIN genera varias filas por post
+add_filter('posts_distinct', 'bp_localidad_search_distinct', 10, 2);
+function bp_localidad_search_distinct($distinct, $query) {
+    if (!is_admin() || !$query->is_main_query() || !$query->is_search()) return $distinct;
+    if ($query->get('post_type') !== BP_CPT) return $distinct;
+    return 'DISTINCT';
+}
