@@ -11,7 +11,7 @@
         telefono:               ['TELÉFONO', 'TELEFONO', 'Teléfono', 'Telefono'],
         email:                  ['EMAIL', 'E-MAIL', 'Email'],
         parroco:                ['PÁRROCO', 'PARROCO', 'Párroco', 'Parroco'],
-        up_sector:              ['UP / SECTOR', 'UP/SECTOR', 'UP', 'SECTOR'],
+        up_sector:              ['U.P. / SECTOR', 'UP / SECTOR', 'UP/SECTOR', 'U.P./SECTOR', 'UP', 'SECTOR'],
         horario_misas_invierno: ['Horario misas invierno', 'HORARIO MISAS INVIERNO'],
         horario_misas_verano:   ['Horario misas verano',  'HORARIO MISAS VERANO'],
         latitud:                ['LATITUD', 'Latitud'],
