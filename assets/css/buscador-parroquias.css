@@ -358,6 +358,21 @@
     background: rgba(0, 161, 154, 0.08);
     border-color: #00a19a;
 }
+.bp-btn-export {
+    border: 2px solid rgba(56, 170, 225, 0.35);
+    background: #fff;
+    color: #38aae1;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.bp-btn-export:hover {
+    background: rgba(56, 170, 225, 0.08);
+    border-color: #38aae1;
+}
 
 /* ── Impresión / PDF ── */
 @media print {

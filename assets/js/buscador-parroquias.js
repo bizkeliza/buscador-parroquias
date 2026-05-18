@@ -114,6 +114,7 @@
                         '<div id="bp-print-bar" class="bp-print-bar">' +
                             '<button id="bp-btn-print" class="bp-btn-print" style="display:none">Imprimir resultados</button>' +
                             '<button id="bp-btn-print-all" class="bp-btn-print-all" style="display:none">Imprimir todo</button>' +
+                            '<button id="bp-btn-export" class="bp-btn-export" style="display:none">Descargar Excel</button>' +
                         '</div>' +
                     '</div>' +
                     '<div id="bp-results" class="bp-results">' +
@@ -233,6 +234,36 @@
         }
     }
 
+    function exportarExcel() {
+        var cabeceras = ['LOCALIDAD', 'PARROQUIA', 'U.P. SECTOR', 'DIRECCIÓN', 'C.P.', 'TELÉFONO', 'EMAIL', 'PÁRROCO'];
+        var filas = datos.map(function (item) {
+            return [
+                item.localidad  || '',
+                item.parroquia  || '',
+                item.upSector   || '',
+                item.direccion  || '',
+                item.cp         || '',
+                item.telefono   || '',
+                item.email      || '',
+                item.parroco    || ''
+            ].map(function (v) {
+                return '"' + String(v).replace(/"/g, '""') + '"';
+            }).join(';');
+        });
+
+        // BOM UTF-8 para que Excel abra correctamente con tildes
+        var csv = '﻿' + cabeceras.map(function (c) { return '"' + c + '"'; }).join(';') + '\r\n' + filas.join('\r\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'parroquias.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     function mostrarInicio() {
         var results = document.getElementById('bp-results');
         if (!results) return;
@@ -265,6 +296,8 @@
             status.textContent = 'Escribe una localidad o parroquia y pulsa "Buscar", o usa "Cerca de mí".';
             var btnPrintAll = document.getElementById('bp-btn-print-all');
             if (btnPrintAll && datos.length) btnPrintAll.style.display = '';
+            var btnExport = document.getElementById('bp-btn-export');
+            if (btnExport && datos.length) btnExport.style.display = '';
             mostrarInicio();
         } catch (error) {
             status.textContent  = 'Error al cargar los datos.';
@@ -326,11 +359,13 @@
         var btnClear    = document.getElementById('bp-btn-clear');
         var btnPrint    = document.getElementById('bp-btn-print');
         var btnPrintAll = document.getElementById('bp-btn-print-all');
+        var btnExport   = document.getElementById('bp-btn-export');
         var status      = document.getElementById('bp-status');
 
         btnSearch.addEventListener('click', function () { buscar(false); });
         if (btnPrint)    btnPrint.addEventListener('click',    function () { imprimir(false); });
         if (btnPrintAll) btnPrintAll.addEventListener('click', function () { imprimir(true); });
+        if (btnExport)   btnExport.addEventListener('click',   exportarExcel);
 
         btnNear.addEventListener('click', async function () {
             status.textContent = 'Obteniendo tu ubicación...';
