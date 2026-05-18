@@ -109,9 +109,6 @@
                 var json   = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
                 logMsg(log, 'Filas leídas del Excel: ' + json.length, 'info');
-                if (json.length > 0) {
-                    logMsg(log, 'Columnas detectadas: ' + Object.keys(json[0]).join(' | '), 'info');
-                }
 
                 var filas = json.map(function (fila) {
                     var row = {};
