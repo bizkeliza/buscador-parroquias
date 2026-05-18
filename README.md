@@ -187,6 +187,46 @@ Respuesta (array JSON):
 
 Insértalo en cualquier página o entrada de WordPress.
 
+## Compatibilidad y portabilidad
+
+### ¿Se puede instalar en cualquier web WordPress?
+
+Sí, con dos requisitos:
+
+| Requisito | Detalle |
+|---|---|
+| **ACF instalado** (free o Pro) | Los campos de edición del admin se registran vía ACF. Sin él los campos no aparecen en el panel, aunque la importación desde Excel sigue funcionando porque escribe directamente en `post_meta`. |
+| **Acceso al CDN de SheetJS** | `cdn.sheetjs.com` se carga únicamente en la página de importación del admin. En servidores sin salida a internet la importación fallará; el buscador público no se ve afectado. |
+
+### Actualizaciones de WordPress
+
+| Área | Riesgo | Notas |
+|---|---|---|
+| Core WordPress | **Bajo** | Usa APIs estables: CPT, REST API, Settings API, `wp_insert_post`, nonces |
+| Filtros de búsqueda en admin | **Bajo/Medio** | `posts_join` / `posts_search` / `posts_distinct` en `cpt.php` son filtros de bajo nivel sobre `WP_Query`. Afectan solo a la búsqueda del listado de parroquias en el escritorio, no al buscador público. Podrían requerir ajuste en una futura refactorización mayor de WP |
+
+### Actualizaciones de DIVI
+
+**Riesgo prácticamente nulo.** El plugin es completamente independiente del tema:
+
+- No usa ninguna función ni hook de DIVI
+- El shortcode `[buscador_parroquias]` funciona en cualquier módulo de texto/código de DIVI
+- Los estilos están aislados bajo `#bp-app` y no interfieren con el CSS del tema
+
+### Versiones de PHP compatibles
+
+| PHP 7.4 | PHP 8.0 | PHP 8.1 | PHP 8.2 | PHP 8.3 |
+|---|---|---|---|---|
+| ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Requiere PHP 7.0+ por el operador `??`. Sin funciones deprecadas en PHP 8.x.
+
+### Limitaciones conocidas
+
+- **Shortcode en portadas tipo archivo:** el CSS/JS del buscador solo se carga en páginas singulares (`is_singular()`). Si el shortcode se inserta en una portada configurada como "últimas entradas", el buscador no cargará sus estilos. Solución: usar una página estática como portada, que sí es singular.
+- **Carga de todos los registros de golpe:** la API REST devuelve todas las parroquias sin paginación. Para menos de ~300 registros no hay impacto perceptible; por encima de 500 puede notarse lentitud en la primera carga.
+- **Versión de SheetJS fijada:** `admin-import.php` apunta a la versión `0.20.3` del CDN. Si esa versión se depreca en el CDN, actualizar la URL es suficiente para restablecer la importación.
+
 ## Estructura de archivos
 
 ```
