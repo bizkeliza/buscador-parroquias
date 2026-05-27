@@ -1,0 +1,41 @@
+name: Sincronizar submódulo en workspace-it
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    name: Actualizar workspace-it
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout workspace-it
+        uses: actions/checkout@v4
+        with:
+          repository: bizkeliza/workspace-it
+          token: ${{ secrets.GH_PAT }}        # PAT con acceso a workspace-it
+          submodules: true
+
+      - name: Actualizar submódulo buscador-parroquias
+        run: |
+          git submodule update --remote wordpress/buscador-parroquias
+
+      - name: Hacer commit y push si hay cambios
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
+          if git diff --staged --quiet && git diff --quiet; then
+            echo "No hay cambios en el submódulo."
+          else
+            # Leer versión del plugin para el mensaje de commit
+            VERSION=$(grep -m1 "^Version:" wordpress/buscador-parroquias/buscador-parroquias.php \
+              | awk '{print $2}' | tr -d '[:space:]')
+
+            git add wordpress/buscador-parroquias
+            git commit -m "chore: actualizar submódulo buscador-parroquias a v${VERSION}"
+            git push
+            echo "✅ workspace-it actualizado a v${VERSION}"
+          fi
