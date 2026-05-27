@@ -1,0 +1,59 @@
+name: Publicar Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'buscador-parroquias.php'   # Solo se dispara si cambia el archivo principal
+
+jobs:
+  release:
+    name: Crear release si la versión es nueva
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Necesario para crear tags y releases
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Leer versión del plugin
+        id: version
+        run: |
+          # Extrae la línea "Version: X.X.X" del header del PHP
+          VERSION=$(grep -m1 "^Version:" buscador-parroquias.php | awk '{print $2}' | tr -d '[:space:]')
+          echo "Versión detectada: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Comprobar si ya existe la release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "La release $TAG ya existe. No se crea de nuevo."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "La release $TAG no existe. Se procede a crearla."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Crear release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --target main \
+            --title "Buscador de Parroquias $TAG" \
+            --generate-notes \
+            --latest
+
+          echo "✅ Release $TAG publicada correctamente."
