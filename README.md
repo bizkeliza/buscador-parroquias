@@ -1,4 +1,5 @@
 # Buscador de Parroquias — WordPress Plugin
+<!-- v2.8.0 -->
 
 Plugin de WordPress para publicar una guía de parroquias y horarios de misa configurable para cualquier diócesis o organización religiosa.
 
