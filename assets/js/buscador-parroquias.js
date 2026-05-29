@@ -103,7 +103,7 @@
                         '<div class="bp-searchbar">' +
                             '<div class="bp-input-wrap">' +
                                 '<div class="bp-input-box">' +
-                                    '<input id="bp-input" class="bp-input" type="text" placeholder="Buscar por parroquia o localidad...">' +
+                                    '<input id="bp-input" class="bp-input" type="text" placeholder="Buscar por parroquia, localidad o U.P....">' +
                                 '</div>' +
                             '</div>' +
                             '<button id="bp-btn-search" class="bp-btn">Buscar</button>' +
@@ -293,7 +293,7 @@
             var response = await fetch(REST_URL);
             if (!response.ok) throw new Error('HTTP ' + response.status);
             datos = await response.json();
-            status.textContent = 'Escribe una localidad o parroquia y pulsa "Buscar", o usa "Cerca de mí".';
+            status.textContent = 'Escribe una parroquia, localidad o U.P. y pulsa "Buscar", o usa "Cerca de mí".';
             var btnPrintAll = document.getElementById('bp-btn-print-all');
             if (btnPrintAll && datos.length) btnPrintAll.style.display = '';
             var btnExport = document.getElementById('bp-btn-export');
@@ -318,7 +318,7 @@
         }
 
         var filtrados = datos.filter(function (item) {
-            var textoBusqueda = [item.parroquia, item.localidad].map(normalizarTexto).join(' ');
+            var textoBusqueda = [item.parroquia, item.localidad, item.upSector].map(normalizarTexto).join(' ');
             return termino ? textoBusqueda.includes(termino) : true;
         });
 
@@ -380,7 +380,7 @@
 
         btnClear.addEventListener('click', function () {
             if (input) input.value = '';
-            status.textContent = 'Escribe una localidad o parroquia y pulsa "Buscar", o usa "Cerca de mí".';
+            status.textContent = 'Escribe una parroquia, localidad o U.P. y pulsa "Buscar", o usa "Cerca de mí".';
             mostrarInicio();
         });
 
