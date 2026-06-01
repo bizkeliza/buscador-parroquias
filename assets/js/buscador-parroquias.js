@@ -121,14 +121,21 @@
                         '<div class="bp-loading">Cargando...</div>' +
                     '</div>' +
                 '</div>' +
-                (cfg.footerOrg || footerIconsHtml
+                (cfg.logoUrl || cfg.footerOrg || footerIconsHtml
                     ? '<div class="bp-footer">' +
                         '<div class="bp-footer-grid">' +
+                            (cfg.logoUrl
+                                ? '<div class="bp-footer-logo-wrap">' +
+                                    (cfg.logoLink
+                                        ? '<a href="' + escapeHtml(cfg.logoLink) + '" target="_blank" rel="noopener noreferrer"><img class="bp-footer-logo" src="' + escapeHtml(cfg.logoUrl) + '" alt="' + escapeHtml(cfg.orgName) + '"></a>'
+                                        : '<img class="bp-footer-logo" src="' + escapeHtml(cfg.logoUrl) + '" alt="' + escapeHtml(cfg.orgName) + '">') +
+                                  '</div>'
+                                : '') +
                             '<div>' +
                                 (cfg.footerOrg   ? '<div class="bp-footer-title">' + escapeHtml(cfg.footerOrg) + '</div>' : '') +
                                 (cfg.footerLine1 ? '<div class="bp-footer-line">' + escapeHtml(cfg.footerLine1) + '</div>' : '') +
                             '</div>' +
-                            '<div class="bp-footer-icons">' + footerIconsHtml + '</div>' +
+                            (footerIconsHtml ? '<div class="bp-footer-icons">' + footerIconsHtml + '</div>' : '') +
                         '</div>' +
                       '</div>'
                     : '') +

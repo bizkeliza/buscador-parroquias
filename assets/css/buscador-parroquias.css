@@ -315,7 +315,7 @@
 .bp-results .bp-error,
 .bp-results .bp-start { grid-column: 1 / -1; }
 .bp-start svg { color: #00a19a; margin-bottom: 10px; }
-.bp-update-date { margin-top: 10px; font-size: 0.8em; color: #6b7280; }
+.bp-update-date { margin-top: 10px; font-size: 12px; font-weight: 700; color: #6b7280; }
 .bp-error { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
 
 /* ── Pie de página ── */
@@ -325,11 +325,13 @@
     padding: 22px 24px;
 }
 .bp-footer-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 18px;
-    align-items: start;
+    align-items: center;
 }
+.bp-footer-logo-wrap { display: flex; align-items: center; flex-shrink: 0; }
+.bp-footer-logo { max-height: 52px; width: auto; }
 .bp-footer-title  { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #fff; }
 .bp-footer-line   { margin: 6px 0; font-size: 15px; line-height: 1.5; }
 .bp-footer-icons .bp-footer-line { display: flex; align-items: flex-start; gap: 8px; }
