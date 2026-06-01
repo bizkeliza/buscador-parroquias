@@ -13,7 +13,8 @@ function bp_get_settings() {
         'footer_address'  => '',
         'footer_city'     => '',
         'footer_email'    => '',
-        'radio_km'        => 2,
+        'radio_km'           => 2,
+        'fecha_actualizacion' => '',
     ];
     return wp_parse_args(get_option(BP_OPTION_KEY, []), $defaults);
 }
@@ -50,6 +51,7 @@ function bp_sanitize_settings($input) {
     $text_fields = [
         'org_name', 'logo_url', 'logo_link', 'header_title', 'header_subtitle',
         'footer_org', 'footer_line1', 'footer_address', 'footer_city', 'footer_email',
+        'fecha_actualizacion',
     ];
     foreach ($text_fields as $field) {
         $clean[$field] = sanitize_text_field($input[$field] ?? '');
@@ -113,6 +115,17 @@ function bp_settings_page() {
                     <td>
                         <input type="text" name="<?php echo BP_OPTION_KEY; ?>[header_subtitle]"
                                value="<?php echo esc_attr($s['header_subtitle']); ?>" class="large-text">
+                    </td>
+                </tr>
+            </table>
+
+                <tr>
+                    <th scope="row"><?php _e('Fecha de actualización de datos', 'buscador-parroquias'); ?></th>
+                    <td>
+                        <input type="text" name="<?php echo BP_OPTION_KEY; ?>[fecha_actualizacion]"
+                               value="<?php echo esc_attr($s['fecha_actualizacion']); ?>" class="regular-text"
+                               placeholder="Ej: junio 2025">
+                        <p class="description"><?php _e('Se muestra en el buscador como "Fecha de actualización: …". Actualízala cada vez que importes datos nuevos.', 'buscador-parroquias'); ?></p>
                     </td>
                 </tr>
             </table>

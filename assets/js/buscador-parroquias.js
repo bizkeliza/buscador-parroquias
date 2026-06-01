@@ -275,6 +275,7 @@
             '<div class="bp-start">' +
                 iconChurch +
                 '<div style="margin-top:6px;">Busca una parroquia o localidad, o usa tu ubicación para ver iglesias en un radio de ' + RADIO_KM + ' km.</div>' +
+                (cfg.fechaActualizacion ? '<div class="bp-update-date">Fecha de actualización: ' + escapeHtml(cfg.fechaActualizacion) + '</div>' : '') +
             '</div>';
     }
 

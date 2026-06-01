@@ -33,7 +33,8 @@ function bp_enqueue_frontend() {
         'footerLine1'     => $s['footer_line1'],
         'footerAddress'   => $s['footer_address'],
         'footerCity'      => $s['footer_city'],
-        'footerEmail'     => $s['footer_email'],
+        'footerEmail'        => $s['footer_email'],
+        'fechaActualizacion' => $s['fecha_actualizacion'],
     ]);
 }
 

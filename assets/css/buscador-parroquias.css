@@ -315,6 +315,7 @@
 .bp-results .bp-error,
 .bp-results .bp-start { grid-column: 1 / -1; }
 .bp-start svg { color: #00a19a; margin-bottom: 10px; }
+.bp-update-date { margin-top: 10px; font-size: 0.8em; color: #6b7280; }
 .bp-error { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
 
 /* ── Pie de página ── */
