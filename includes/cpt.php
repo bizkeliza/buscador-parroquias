@@ -32,6 +32,7 @@ function bp_add_localidad_column($columns) {
         $new[$key] = $label;
         if ($key === 'title') {
             $new['localidad'] = __('Localidad', 'buscador-parroquias');
+            $new['up_sector'] = __('UP / Sector', 'buscador-parroquias');
         }
     }
     return $new;
@@ -42,11 +43,15 @@ function bp_render_localidad_column($column, $post_id) {
     if ($column === 'localidad') {
         echo esc_html(get_post_meta($post_id, 'localidad', true));
     }
+    if ($column === 'up_sector') {
+        echo esc_html(get_post_meta($post_id, 'up_sector', true));
+    }
 }
 
 add_filter('manage_edit-bp_parroquia_sortable_columns', 'bp_sortable_localidad_column');
 function bp_sortable_localidad_column($columns) {
     $columns['localidad'] = 'localidad';
+    $columns['up_sector'] = 'up_sector';
     return $columns;
 }
 
@@ -54,9 +59,14 @@ add_action('pre_get_posts', 'bp_localidad_orderby');
 function bp_localidad_orderby($query) {
     if (!is_admin() || !$query->is_main_query()) return;
     if ($query->get('post_type') !== BP_CPT) return;
-    if ($query->get('orderby') !== 'localidad') return;
-    $query->set('meta_key', 'localidad');
-    $query->set('orderby', 'meta_value');
+    $orderby = $query->get('orderby');
+    if ($orderby === 'localidad') {
+        $query->set('meta_key', 'localidad');
+        $query->set('orderby', 'meta_value');
+    } elseif ($orderby === 'up_sector') {
+        $query->set('meta_key', 'up_sector');
+        $query->set('orderby', 'meta_value');
+    }
 }
 
 // ── Búsqueda por localidad en el buscador del escritorio ─────────────────────
@@ -69,6 +79,9 @@ function bp_localidad_search_join($join, $query) {
     $join .= " LEFT JOIN {$wpdb->postmeta} AS bp_meta_loc
                 ON ({$wpdb->posts}.ID = bp_meta_loc.post_id
                 AND bp_meta_loc.meta_key = 'localidad')";
+    $join .= " LEFT JOIN {$wpdb->postmeta} AS bp_meta_up
+                ON ({$wpdb->posts}.ID = bp_meta_up.post_id
+                AND bp_meta_up.meta_key = 'up_sector')";
     return $join;
 }
 
@@ -79,6 +92,7 @@ function bp_localidad_search_where($search, $query) {
     if ($query->get('post_type') !== BP_CPT) return $search;
     $term = '%' . $wpdb->esc_like($query->get('s')) . '%';
     $search .= $wpdb->prepare(' OR bp_meta_loc.meta_value LIKE %s', $term);
+    $search .= $wpdb->prepare(' OR bp_meta_up.meta_value LIKE %s', $term);
     return $search;
 }
 
