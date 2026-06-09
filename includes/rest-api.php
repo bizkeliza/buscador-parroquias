@@ -34,8 +34,14 @@ function bp_rest_get_parroquias() {
             'email'           => get_post_meta($post->ID, 'email',                  true),
             'parroco'         => get_post_meta($post->ID, 'parroco',                true),
             'upSector'        => get_post_meta($post->ID, 'up_sector',              true),
-            'horarioInvierno' => get_post_meta($post->ID, 'horario_misas_invierno', true),
-            'horarioVerano'   => get_post_meta($post->ID, 'horario_misas_verano',   true),
+            'horarioInvierno' => wp_kses(
+                get_post_meta($post->ID, 'horario_misas_invierno', true),
+                ['a' => ['href' => true, 'target' => true, 'rel' => true, 'title' => true]]
+            ),
+            'horarioVerano'   => wp_kses(
+                get_post_meta($post->ID, 'horario_misas_verano', true),
+                ['a' => ['href' => true, 'target' => true, 'rel' => true, 'title' => true]]
+            ),
             'latitud'         => $lat !== '' ? (float) $lat : null,
             'longitud'        => $lon !== '' ? (float) $lon : null,
         ];

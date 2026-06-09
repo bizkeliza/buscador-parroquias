@@ -26,6 +26,23 @@
             .trim();
     }
 
+    // Permite solo <a href> con URL http/https; fuerza target/_blank y rel noopener
+    function sanitizeScheduleHtml(html) {
+        if (!html) return 'No disponible';
+        var tmp = document.createElement('div');
+        tmp.innerHTML = String(html);
+        tmp.querySelectorAll('a').forEach(function (a) {
+            var href = a.getAttribute('href') || '';
+            if (!/^https?:\/\//i.test(href)) {
+                a.parentNode.replaceChild(document.createTextNode(a.textContent), a);
+            } else {
+                a.setAttribute('target', '_blank');
+                a.setAttribute('rel', 'noopener noreferrer');
+            }
+        });
+        return tmp.innerHTML;
+    }
+
     function escapeHtml(texto) {
         return (texto || '')
             .toString()
@@ -201,8 +218,8 @@
 
                         '<div class="bp-schedules">' +
                             '<div class="bp-schedules-title">Horarios de misa</div>' +
-                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Invierno</div><div>' + escapeHtml(item.horarioInvierno || 'No disponible') + '</div></div>' +
-                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Verano</div><div>'   + escapeHtml(item.horarioVerano   || 'No disponible') + '</div></div>' +
+                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Invierno</div><div>' + sanitizeScheduleHtml(item.horarioInvierno) + '</div></div>' +
+                            '<div class="bp-schedule-row"><div class="bp-schedule-label">Verano</div><div>'   + sanitizeScheduleHtml(item.horarioVerano)   + '</div></div>' +
                         '</div>' +
 
                         (mapa ? '<div class="bp-actions"><a class="bp-link" href="' + mapa + '" target="_blank" rel="noopener">Ver en Google Maps</a></div>' : '') +
