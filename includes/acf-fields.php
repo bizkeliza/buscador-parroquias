@@ -121,3 +121,15 @@ function bp_register_acf_fields() {
         'label_placement' => 'top',
     ]);
 }
+
+// ACF textarea aplica sanitize_textarea_field() que elimina etiquetas HTML.
+// Estos filtros recuperan el valor crudo de $_POST y aplican wp_kses() en su lugar,
+// permitiendo solo <a href> seguro en los campos de horario.
+add_filter('acf/update_value/name=horario_misas_invierno', 'bp_horario_allow_links', 10, 3);
+add_filter('acf/update_value/name=horario_misas_verano',   'bp_horario_allow_links', 10, 3);
+function bp_horario_allow_links($value, $post_id, $field) {
+    $raw = isset($_POST['acf'][ $field['key'] ])
+        ? wp_unslash($_POST['acf'][ $field['key'] ])
+        : $value;
+    return wp_kses($raw, ['a' => ['href' => [], 'title' => [], 'target' => []]]);
+}
