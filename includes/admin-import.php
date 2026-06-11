@@ -96,6 +96,10 @@ function bp_ajax_import_batch() {
     $campos  = ['parroquia','localidad','direccion','cp','telefono','email',
                  'parroco','up_sector','horario_misas_invierno','horario_misas_verano',
                  'latitud','longitud'];
+
+    // Campos que pueden contener HTML (enlaces <a href>)
+    $campos_html = ['horario_misas_invierno', 'horario_misas_verano'];
+
     $creadas = $errores = 0;
 
     foreach ($filas as $fila) {
@@ -111,15 +115,25 @@ function bp_ajax_import_batch() {
         if (is_wp_error($post_id)) { $errores++; continue; }
 
         foreach ($campos as $campo) {
-            $valor = sanitize_text_field($fila[$campo] ?? '');
-            if ($campo === 'latitud' || $campo === 'longitud') {
+            $raw = $fila[$campo] ?? '';
+
+            // No sobreescribir campos que vengan vacíos desde el Excel
+            if ($raw === '' || $raw === null) continue;
+
+            if (in_array($campo, $campos_html, true)) {
+                // Permitir <a href> y atributos seguros; rechazar scripts u otros tags
+                $valor = wp_kses($raw, [
+                    'a' => ['href' => [], 'title' => [], 'target' => []],
+                ]);
+            } elseif ($campo === 'latitud' || $campo === 'longitud') {
                 // Normalizar coma decimal → punto; validar sin castear a float
                 // (evita problema de locale: (string)(float) puede producir coma en servidor ES)
-                $valor = str_replace(',', '.', $valor);
-                if ($valor !== '' && !preg_match('/^-?\d+(\.\d+)?$/', $valor)) {
-                    $valor = '';
-                }
+                $valor = str_replace(',', '.', sanitize_text_field($raw));
+                if (!preg_match('/^-?\d+(\.\d+)?$/', $valor)) continue;
+            } else {
+                $valor = sanitize_text_field($raw);
             }
+
             update_post_meta($post_id, $campo, $valor);
         }
         $creadas++;
