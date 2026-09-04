@@ -104,7 +104,11 @@ El archivo `.xlsx` debe tener una fila de cabecera. El plugin reconoce los nombr
 
 4. Publica la página
 
-El buscador ya está operativo. Los visitantes pueden buscar por nombre de parroquia o localidad, o pulsar **Cerca de mí** para ver iglesias en el radio configurado.
+El buscador ya está operativo, con 3 pestañas de búsqueda independientes:
+
+- **📍 Cerca de mí** — pulsa el botón para ver iglesias en el radio configurado, usando la ubicación GPS del visitante.
+- **🏘️ Por localidad** — despliega la lista (rellenada automáticamente con las localidades del Excel importado) y selecciona una; los resultados se filtran al instante.
+- **⛪ Por parroquia** — escribe el nombre (o parte de él) y pulsa "Buscar".
 
 ## Formato del Excel de importación
 
