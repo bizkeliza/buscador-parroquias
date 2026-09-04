@@ -117,15 +117,39 @@
                 '</div>' +
                 '<div class="bp-body">' +
                     '<div class="bp-search-panel">' +
-                        '<div class="bp-searchbar">' +
-                            '<div class="bp-input-wrap">' +
-                                '<div class="bp-input-box">' +
-                                    '<input id="bp-input" class="bp-input" type="text" placeholder="Buscar por parroquia, localidad o U.P....">' +
+                        '<div class="bp-tabs" role="tablist">' +
+                            '<button type="button" class="bp-tab bp-tab--active" data-mode="cerca" role="tab" aria-selected="true">📍 Cerca de mí</button>' +
+                            '<button type="button" class="bp-tab" data-mode="localidad" role="tab" aria-selected="false">🏘️ Por localidad</button>' +
+                            '<button type="button" class="bp-tab" data-mode="parroquia" role="tab" aria-selected="false">⛪ Por parroquia</button>' +
+                        '</div>' +
+                        '<div class="bp-tab-panel" data-panel="cerca">' +
+                            '<div class="bp-searchbar">' +
+                                '<button id="bp-btn-near" class="bp-btn-secondary" type="button">Usar mi ubicación</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="bp-tab-panel" data-panel="localidad" hidden>' +
+                            '<div class="bp-searchbar">' +
+                                '<div class="bp-input-wrap">' +
+                                    '<div class="bp-input-box bp-select-box">' +
+                                        '<select id="bp-select-localidad" class="bp-select">' +
+                                            '<option value="">Selecciona una localidad...</option>' +
+                                        '</select>' +
+                                    '</div>' +
                                 '</div>' +
                             '</div>' +
-                            '<button id="bp-btn-search" class="bp-btn">Buscar</button>' +
-                            '<button id="bp-btn-near" class="bp-btn-secondary">Cerca de mí</button>' +
-                            '<button id="bp-btn-clear" class="bp-btn-clear">Limpiar</button>' +
+                        '</div>' +
+                        '<div class="bp-tab-panel" data-panel="parroquia" hidden>' +
+                            '<div class="bp-searchbar">' +
+                                '<div class="bp-input-wrap">' +
+                                    '<div class="bp-input-box">' +
+                                        '<input id="bp-input-parroquia" class="bp-input" type="text" placeholder="Nombre de la parroquia...">' +
+                                    '</div>' +
+                                '</div>' +
+                                '<button id="bp-btn-search-parroquia" class="bp-btn" type="button">Buscar</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="bp-toolbar-bottom">' +
+                            '<button id="bp-btn-clear" class="bp-btn-clear" type="button">Limpiar</button>' +
                         '</div>' +
                         '<div id="bp-status" class="bp-status">Cargando datos...</div>' +
                         '<div id="bp-print-bar" class="bp-print-bar">' +
@@ -288,19 +312,64 @@
         URL.revokeObjectURL(url);
     }
 
+    var MENSAJES_MODO = {
+        cerca:     'Pulsa "Usar mi ubicación" para ver iglesias en un radio de ' + RADIO_KM + ' km.',
+        localidad: 'Selecciona una localidad en el desplegable.',
+        parroquia: 'Escribe el nombre de una parroquia y pulsa "Buscar".'
+    };
+
     function mostrarInicio() {
         var results = document.getElementById('bp-results');
+        var status  = document.getElementById('bp-status');
         if (!results) return;
         listaActual   = [];
         mensajeActual = '';
         var btnPrint = document.getElementById('bp-btn-print');
         if (btnPrint) btnPrint.style.display = 'none';
+        var mensaje = MENSAJES_MODO[modoActual] || '';
+        if (status) status.textContent = mensaje;
         results.innerHTML =
             '<div class="bp-start">' +
                 iconChurch +
-                '<div style="margin-top:6px;">Busca una parroquia o localidad, o usa tu ubicación para ver iglesias en un radio de ' + RADIO_KM + ' km.</div>' +
+                '<div style="margin-top:6px;">' + escapeHtml(mensaje) + '</div>' +
                 (cfg.fechaActualizacion ? '<div class="bp-update-date">Fecha de actualización: ' + escapeHtml(cfg.fechaActualizacion) + '</div>' : '') +
             '</div>';
+    }
+
+    // ── Pestañas de búsqueda ────────────────────────────────────────────────────
+
+    function activarModo(modo) {
+        modoActual = modo;
+        document.querySelectorAll('.bp-tab').forEach(function (tab) {
+            var activo = tab.getAttribute('data-mode') === modo;
+            tab.classList.toggle('bp-tab--active', activo);
+            tab.setAttribute('aria-selected', activo ? 'true' : 'false');
+        });
+        document.querySelectorAll('.bp-tab-panel').forEach(function (panel) {
+            panel.hidden = panel.getAttribute('data-panel') !== modo;
+        });
+        mostrarInicio();
+    }
+
+    function poblarLocalidades() {
+        var select = document.getElementById('bp-select-localidad');
+        if (!select) return;
+        var vistos   = {};
+        var opciones = [];
+        datos.forEach(function (item) {
+            var loc = (item.localidad || '').toString().trim();
+            if (!loc) return;
+            var clave = normalizarTexto(loc);
+            if (vistos[clave]) return;
+            vistos[clave] = true;
+            opciones.push(loc);
+        });
+        opciones.sort(function (a, b) { return a.localeCompare(b, 'es'); });
+        select.innerHTML =
+            '<option value="">Selecciona una localidad...</option>' +
+            opciones.map(function (loc) {
+                return '<option value="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</option>';
+            }).join('');
     }
 
     // ── Carga de datos ──────────────────────────────────────────────────────────
@@ -309,6 +378,7 @@
     var ubicacionUsuario = null;
     var listaActual      = [];
     var mensajeActual    = '';
+    var modoActual       = 'cerca';
 
     async function cargarDatos() {
         var status  = document.getElementById('bp-status');
@@ -318,11 +388,11 @@
             var response = await fetch(REST_URL);
             if (!response.ok) throw new Error('HTTP ' + response.status);
             datos = await response.json();
-            status.textContent = 'Escribe una parroquia, localidad o U.P. y pulsa "Buscar", o usa "Cerca de mí".';
             var btnPrintAll = document.getElementById('bp-btn-print-all');
             if (btnPrintAll && datos.length) btnPrintAll.style.display = '';
             var btnExport = document.getElementById('bp-btn-export');
             if (btnExport && datos.length) btnExport.style.display = '';
+            poblarLocalidades();
             mostrarInicio();
         } catch (error) {
             status.textContent  = 'Error al cargar los datos.';
@@ -332,42 +402,53 @@
 
     // ── Búsqueda ─────────────────────────────────────────────────────────────────
 
-    function buscar(cercaDeMi) {
-        var input  = document.getElementById('bp-input');
-        var status = document.getElementById('bp-status');
-        var termino = normalizarTexto(input ? input.value : '');
-
-        if (!termino && !cercaDeMi) {
-            mostrarInicio();
+    function buscarCercaDeMi() {
+        if (!ubicacionUsuario) {
+            pintarResultados([], 'No se pudo obtener tu ubicación.', null);
             return;
         }
 
-        var filtrados = datos.filter(function (item) {
-            var textoBusqueda = [item.parroquia, item.localidad, item.upSector].map(normalizarTexto).join(' ');
-            return termino ? textoBusqueda.includes(termino) : true;
-        });
+        var filtrados = datos
+            .map(function (item) {
+                var dist = (item.latitud !== null && item.longitud !== null)
+                    ? calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lon, item.latitud, item.longitud)
+                    : null;
+                return Object.assign({}, item, { _dist: dist });
+            })
+            .filter(function (item) { return item._dist !== null && item._dist <= RADIO_KM; })
+            .sort(function (a, b) { return a._dist - b._dist; });
 
-        if (cercaDeMi) {
-            if (!ubicacionUsuario) {
-                pintarResultados([], 'No se pudo obtener tu ubicación.', null);
-                return;
-            }
-            filtrados = filtrados
-                .map(function (item) {
-                    var dist = (item.latitud !== null && item.longitud !== null)
-                        ? calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lon, item.latitud, item.longitud)
-                        : null;
-                    return Object.assign({}, item, { _dist: dist });
-                })
-                .filter(function (item) { return item._dist !== null && item._dist <= RADIO_KM; })
-                .sort(function (a, b) { return a._dist - b._dist; });
-        }
-
-        var mensaje = cercaDeMi
-            ? (filtrados.length ? filtrados.length + ' resultado(s) en un radio de ' + RADIO_KM + ' km.' : 'No hay resultados en un radio de ' + RADIO_KM + ' km.')
-            : (filtrados.length ? filtrados.length + ' resultado(s) encontrado(s).' : 'No se han encontrado resultados.');
+        var mensaje = filtrados.length
+            ? filtrados.length + ' resultado(s) en un radio de ' + RADIO_KM + ' km.'
+            : 'No hay resultados en un radio de ' + RADIO_KM + ' km.';
 
         pintarResultados(filtrados, mensaje, ubicacionUsuario);
+    }
+
+    function buscarPorLocalidad(valor) {
+        if (!valor) { mostrarInicio(); return; }
+
+        var clave     = normalizarTexto(valor);
+        var filtrados = datos.filter(function (item) { return normalizarTexto(item.localidad) === clave; });
+        var mensaje   = filtrados.length
+            ? filtrados.length + ' resultado(s) en ' + valor + '.'
+            : 'No se han encontrado parroquias en ' + valor + '.';
+
+        pintarResultados(filtrados, mensaje, null);
+    }
+
+    function buscarPorParroquia() {
+        var input   = document.getElementById('bp-input-parroquia');
+        var termino = normalizarTexto(input ? input.value : '');
+
+        if (!termino) { mostrarInicio(); return; }
+
+        var filtrados = datos.filter(function (item) { return normalizarTexto(item.parroquia).includes(termino); });
+        var mensaje   = filtrados.length
+            ? filtrados.length + ' resultado(s) encontrado(s).'
+            : 'No se han encontrado resultados.';
+
+        pintarResultados(filtrados, mensaje, null);
     }
 
     // ── Inicialización ───────────────────────────────────────────────────────────
@@ -378,16 +459,20 @@
 
         renderApp(app);
 
-        var input       = document.getElementById('bp-input');
-        var btnSearch   = document.getElementById('bp-btn-search');
-        var btnNear     = document.getElementById('bp-btn-near');
-        var btnClear    = document.getElementById('bp-btn-clear');
-        var btnPrint    = document.getElementById('bp-btn-print');
-        var btnPrintAll = document.getElementById('bp-btn-print-all');
-        var btnExport   = document.getElementById('bp-btn-export');
-        var status      = document.getElementById('bp-status');
+        var btnNear             = document.getElementById('bp-btn-near');
+        var selectLocalidad     = document.getElementById('bp-select-localidad');
+        var inputParroquia      = document.getElementById('bp-input-parroquia');
+        var btnSearchParroquia  = document.getElementById('bp-btn-search-parroquia');
+        var btnClear            = document.getElementById('bp-btn-clear');
+        var btnPrint            = document.getElementById('bp-btn-print');
+        var btnPrintAll         = document.getElementById('bp-btn-print-all');
+        var btnExport           = document.getElementById('bp-btn-export');
+        var status              = document.getElementById('bp-status');
 
-        btnSearch.addEventListener('click', function () { buscar(false); });
+        document.querySelectorAll('.bp-tab').forEach(function (tab) {
+            tab.addEventListener('click', function () { activarModo(tab.getAttribute('data-mode')); });
+        });
+
         if (btnPrint)    btnPrint.addEventListener('click',    function () { imprimir(false); });
         if (btnPrintAll) btnPrintAll.addEventListener('click', function () { imprimir(true); });
         if (btnExport)   btnExport.addEventListener('click',   exportarExcel);
@@ -400,20 +485,25 @@
                 return;
             }
             ubicacionUsuario = ub;
-            buscar(true);
+            buscarCercaDeMi();
         });
 
-        btnClear.addEventListener('click', function () {
-            if (input) input.value = '';
-            status.textContent = 'Escribe una parroquia, localidad o U.P. y pulsa "Buscar", o usa "Cerca de mí".';
-            mostrarInicio();
-        });
+        if (selectLocalidad) {
+            selectLocalidad.addEventListener('change', function () { buscarPorLocalidad(this.value); });
+        }
 
-        if (input) {
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') buscar(false);
+        if (btnSearchParroquia) btnSearchParroquia.addEventListener('click', buscarPorParroquia);
+        if (inputParroquia) {
+            inputParroquia.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') buscarPorParroquia();
             });
         }
+
+        btnClear.addEventListener('click', function () {
+            if (inputParroquia)  inputParroquia.value = '';
+            if (selectLocalidad) selectLocalidad.value = '';
+            mostrarInicio();
+        });
 
         cargarDatos();
     });
