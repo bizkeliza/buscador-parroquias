@@ -7,6 +7,7 @@ Plugin de WordPress para publicar una guía de parroquias y horarios de misa con
 
 - **Tres modos de búsqueda** en pestañas: por ubicación ("Cerca de mí", radio configurable en km), por localidad (desplegable) y por nombre de parroquia (texto libre)
 - **Tarjetas de resultado** con horarios de invierno/verano, contacto y enlace a Google Maps
+- **Parroquias por sacerdote** (2.17.0): el nombre del párroco en la tarjeta se puede pinchar y muestra todas las parroquias que atiende, con un botón «Volver» a la búsqueda anterior. Agrupa por el texto del campo PÁRROCO (sin distinguir tildes, mayúsculas ni puntos), así que el nombre debe escribirse igual en todas sus parroquias
 - **Gestión desde WordPress**: cada parroquia es un Custom Post Type gestionable desde el panel de administración
 - **Importación desde Excel** (.xlsx) directamente desde el admin, con detección automática de variantes de nombre de columna
 - **Completamente configurable**: logotipo, textos, colores corporativos y pie de página desde *Ajustes*

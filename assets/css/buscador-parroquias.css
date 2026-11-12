@@ -467,7 +467,8 @@
     .bp-tabs,
     .bp-searchbar,
     .bp-toolbar-bottom,
-    .bp-print-bar {
+    .bp-print-bar,
+    .bp-sacerdote-volver {
         display: none !important;
     }
     .bp-search-panel {
@@ -536,3 +537,56 @@
 
     .bp-footer-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Parroquias por sacerdote (2.17.0) ── */
+/* Nombre del párroco con aspecto de enlace */
+.bp-parroco-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: #0c6ea1;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.bp-parroco-link:hover,
+.bp-parroco-link:focus-visible { color: #a2195b; text-decoration-style: solid; }
+
+/* Cabecera encima de las tarjetas: ocupa las dos columnas */
+.bp-sacerdote-banner {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #eef8f8;
+    border: 1px solid rgba(0, 161, 154, 0.35);
+    border-left: 5px solid #00a19a;
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+.bp-sacerdote-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: #00a19a;
+}
+.bp-sacerdote-nombre { font-size: 18px; font-weight: 700; color: #111827; }
+.bp-sacerdote-n { font-size: 14px; color: #475569; }
+.bp-sacerdote-volver {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #a2195b;
+    color: #fff;
+}
+.bp-sacerdote-volver:hover { background: #86134b; }

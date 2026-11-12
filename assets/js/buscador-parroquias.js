@@ -26,6 +26,11 @@
             .trim();
     }
 
+    // Clave para agrupar parroquias por sacerdote: sin tildes, mayúsculas, puntos ni espacios dobles
+    function claveParroco(valor) {
+        return normalizarTexto(valor).replace(/[.,;]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
     // Permite solo <a href> con URL http/https; fuerza target/_blank y rel noopener
     function sanitizeScheduleHtml(html) {
         if (!html) return 'No disponible';
@@ -185,12 +190,15 @@
 
     // ── Resultados ──────────────────────────────────────────────────────────────
 
-    function pintarResultados(lista, mensaje, ubicacionUsuario) {
+    // cabecera: HTML opcional que se pinta encima de las tarjetas (p. ej. "Parroquias que atiende X")
+    function pintarResultados(lista, mensaje, ubicacionUsuario, cabecera) {
         var status  = document.getElementById('bp-status');
         var results = document.getElementById('bp-results');
 
-        listaActual   = lista || [];
-        mensajeActual = mensaje || '';
+        listaActual    = lista || [];
+        mensajeActual  = mensaje || '';
+        cabeceraActual = cabecera || '';
+        if (!cabecera) anteriorSacerdote = null; // otra búsqueda: se olvida el "Volver"
         var btnPrint = document.getElementById('bp-btn-print');
         if (btnPrint) btnPrint.style.display = (lista && lista.length) ? '' : 'none';
 
@@ -207,7 +215,7 @@
             '<path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
             '</svg>';
 
-        results.innerHTML = lista.map(function (item) {
+        results.innerHTML = (cabecera || '') + lista.map(function (item) {
             var mapa      = construirMapa(item.latitud, item.longitud, item.direccion);
             var distancia = (ubicacionUsuario && item.latitud !== null && item.longitud !== null)
                 ? calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lon, item.latitud, item.longitud)
@@ -236,7 +244,10 @@
                                 (item.cp        ? '<div class="bp-meta-row"><strong>C.P.:</strong><span>' + escapeHtml(item.cp) + '</span></div>' : '') +
                                 (item.telefono  ? '<div class="bp-meta-row"><strong>Teléfono:</strong><span>' + escapeHtml(item.telefono) + '</span></div>' : '') +
                                 (item.email     ? '<div class="bp-meta-row"><strong>Email:</strong><span><a href="mailto:' + escapeHtml(item.email) + '">' + escapeHtml(item.email) + '</a></span></div>' : '') +
-                                (item.parroco   ? '<div class="bp-meta-row"><strong>Párroco:</strong><span>' + escapeHtml(item.parroco) + '</span></div>' : '') +
+                                (item.parroco   ? '<div class="bp-meta-row"><strong>Párroco:</strong><span>' +
+                                                      '<button type="button" class="bp-parroco-link" data-parroco="' + escapeHtml(claveParroco(item.parroco)) + '"' +
+                                                      ' title="Ver todas las parroquias que atiende">' + escapeHtml(item.parroco) + '</button>' +
+                                                  '</span></div>' : '') +
                             '</div>' +
                         '</div>' +
 
@@ -269,13 +280,16 @@
     function imprimir(todo) {
         var prevLista   = listaActual;
         var prevMensaje = mensajeActual;
+        var prevCabecera = cabeceraActual;
+        var prevAnterior = anteriorSacerdote;
         if (todo) {
             pintarResultados(datos, datos.length + ' parroquias en el listado completo.', null);
         }
         window.print();
         if (todo) {
             if (prevLista.length) {
-                pintarResultados(prevLista, prevMensaje, ubicacionUsuario);
+                pintarResultados(prevLista, prevMensaje, ubicacionUsuario, prevCabecera);
+                anteriorSacerdote = prevAnterior;
             } else {
                 mostrarInicio();
             }
@@ -322,8 +336,10 @@
         var results = document.getElementById('bp-results');
         var status  = document.getElementById('bp-status');
         if (!results) return;
-        listaActual   = [];
-        mensajeActual = '';
+        listaActual    = [];
+        mensajeActual  = '';
+        cabeceraActual = '';
+        anteriorSacerdote = null;
         var btnPrint = document.getElementById('bp-btn-print');
         if (btnPrint) btnPrint.style.display = 'none';
         var mensaje = MENSAJES_MODO[modoActual] || '';
@@ -378,7 +394,9 @@
     var ubicacionUsuario = null;
     var listaActual      = [];
     var mensajeActual    = '';
+    var cabeceraActual   = '';
     var modoActual       = 'cerca';
+    var anteriorSacerdote = null; // resultados que había antes de pinchar un sacerdote (para "Volver")
 
     async function cargarDatos() {
         var status  = document.getElementById('bp-status');
@@ -451,6 +469,49 @@
         pintarResultados(filtrados, mensaje, null);
     }
 
+    // Al pinchar el nombre del párroco: solo las parroquias que atiende, ordenadas por localidad
+    function buscarPorSacerdote(clave) {
+        if (!clave) return;
+        var filtrados = datos.filter(function (item) { return claveParroco(item.parroco) === clave; })
+            .sort(function (a, b) {
+                return (a.localidad || '').localeCompare(b.localidad || '', 'es') ||
+                       (a.parroquia || '').localeCompare(b.parroquia || '', 'es');
+            });
+        if (!filtrados.length) return;
+
+        // Guarda la búsqueda anterior una sola vez (si se encadenan sacerdotes, "Volver" va a la original)
+        if (!anteriorSacerdote) {
+            anteriorSacerdote = { lista: listaActual, mensaje: mensajeActual, cabecera: cabeceraActual };
+        }
+
+        var nombre = String(filtrados[0].parroco).trim();
+        var n      = filtrados.length;
+        var cabecera =
+            '<div class="bp-sacerdote-banner">' +
+                '<div>' +
+                    '<div class="bp-sacerdote-label">Sacerdote</div>' +
+                    '<div class="bp-sacerdote-nombre">' + escapeHtml(nombre) + '</div>' +
+                    '<div class="bp-sacerdote-n">Atiende ' + n + (n === 1 ? ' parroquia' : ' parroquias') + '</div>' +
+                '</div>' +
+                '<button type="button" class="bp-sacerdote-volver">← Volver</button>' +
+            '</div>';
+
+        pintarResultados(filtrados, 'Parroquias que atiende ' + nombre + ': ' + n + '.', ubicacionUsuario, cabecera);
+
+        var results = document.getElementById('bp-results');
+        if (results && results.scrollIntoView) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function volverDeSacerdote() {
+        var prev = anteriorSacerdote;
+        anteriorSacerdote = null;
+        if (prev && prev.lista && prev.lista.length) {
+            pintarResultados(prev.lista, prev.mensaje, ubicacionUsuario, prev.cabecera);
+        } else {
+            mostrarInicio();
+        }
+    }
+
     // ── Inicialización ───────────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -471,6 +532,14 @@
 
         document.querySelectorAll('.bp-tab').forEach(function (tab) {
             tab.addEventListener('click', function () { activarModo(tab.getAttribute('data-mode')); });
+        });
+
+        // Clics dentro de los resultados (delegado: las tarjetas se repintan en cada búsqueda)
+        var resultsEl = document.getElementById('bp-results');
+        if (resultsEl) resultsEl.addEventListener('click', function (e) {
+            var link = e.target.closest('.bp-parroco-link');
+            if (link) { e.stopPropagation(); buscarPorSacerdote(link.getAttribute('data-parroco')); return; }
+            if (e.target.closest('.bp-sacerdote-volver')) volverDeSacerdote();
         });
 
         if (btnPrint)    btnPrint.addEventListener('click',    function () { imprimir(false); });
